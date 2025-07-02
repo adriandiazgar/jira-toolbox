@@ -1,52 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { AddSprintData } from './components/AddSprintData';
-import { SprintHistory } from './components/SprintHistory';
-import { CapacityForecast } from './components/CapacityForecast';
-import { HelpModal } from './components/HelpModal';
-import { TeamStats } from './components/TeamStats';
-import { CurrentSprintAnalysis } from './components/CurrentSprintAnalysis';
+import { AddSprintData } from './components/forecaster/AddSprintData';
+import { SprintHistory } from './components/forecaster/SprintHistory';
+import { CapacityForecast } from './components/forecaster/CapacityForecast';
+import { HelpModal } from './components/ui/HelpModal';
+import { TeamStats } from './components/team_stats/TeamStats';
+import { CurrentSprintAnalysis } from './components/current_sprint/CurrentSprintAnalysis';
+import { useLocalStorage } from './hooks/useLocalStorage';
 import { HelpCircle, BarChart2, TrendingUp, Github, Activity } from 'lucide-react';
+import { TabButton } from './components/ui/TabButton';
+import { ThemeToggle } from './components/ui/ThemeToggle';
 
 function App() {
-    const [sprints, setSprints] = useState(() => {
-        try {
-            const savedSprints = localStorage.getItem('sprintsData');
-            if (savedSprints) {
-                return JSON.parse(savedSprints).map(sprint => ({
-                    ...sprint,
-                    createdAt: new Date(sprint.createdAt),
-                }));
-            }
-            return [];
-        } catch (error) {
-            console.error("Could not parse sprints from localStorage", error);
-            return [];
-        }
-    });
-
-    const [sprintDetails, setSprintDetails] = useState(() => {
-        try {
-            const savedDetails = localStorage.getItem('sprintDetails');
-            return savedDetails ? JSON.parse(savedDetails) : {};
-        } catch (error) { return {}; }
-    });
-
-    const [jiraDomain, setJiraDomain] = useState(() => localStorage.getItem('jiraDomain') || '');
+    const [sprints, setSprints] = useLocalStorage('sprintsData', []);
+    const [sprintDetails, setSprintDetails] = useLocalStorage('sprintDetails', {});
+    const [jiraDomain, setJiraDomain] = useLocalStorage('jiraDomain', '');
     const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
     const [activeView, setActiveView] = useState('forecaster');
 
     useEffect(() => {
-        localStorage.setItem('sprintsData', JSON.stringify(sprints));
-    }, [sprints]);
-
-    useEffect(() => {
-        localStorage.setItem('sprintDetails', JSON.stringify(sprintDetails));
-    }, [sprintDetails]);
-
-    useEffect(() => {
-        localStorage.setItem('jiraDomain', jiraDomain);
-    }, [jiraDomain]);
-
+        const sprintsWithDates = sprints.map(sprint => ({
+            ...sprint,
+            createdAt: new Date(sprint.createdAt),
+        }));
+        if (JSON.stringify(sprints) !== JSON.stringify(sprintsWithDates)) {
+            setSprints(sprintsWithDates);
+        }
+    }, []);
 
     const addSprints = (newSprints) => {
         const sprintsWithDate = newSprints.map(s => ({ ...s, createdAt: new Date() }));
@@ -79,42 +58,35 @@ function App() {
         setSprintDetails(prev => ({ ...prev, [sprintId]: details }));
     };
 
-    const TabButton = ({ view, label, icon }) => (
-        <button 
-            onClick={() => setActiveView(view)}
-            className={`flex items-center space-x-2 px-4 py-2 text-sm font-semibold rounded-md transition-colors ${activeView === view ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-200'}`}
-        >
-            {icon}
-            <span>{label}</span>
-        </button>
-    );
-
     return (
         <>
             <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} activeView={activeView} />
-            <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+            <div className="min-h-screen bg-background font-sans text-foreground">
                 <main className="p-4 sm:p-6 md:p-8">
                     <div className="max-w-7xl mx-auto">
-                        <header className="mb-8">
+                        <header className="mb-8 pb-8 border-b">
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800 tracking-tight">Jira Toolbox & Metrics</h1>
-                                    <p className="text-lg text-gray-500 mt-2">Locally-run tool for forecasting and analyzing sprint data.</p>
+                                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Jira Toolbox & Metrics</h1>
+                                    <p className="text-lg text-muted-foreground mt-2">Locally-run tool for forecasting and analyzing sprint data.</p>
                                 </div>
-                                <button 
-                                    onClick={() => setIsHelpModalOpen(true)} 
-                                    className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-                                >
-                                    <HelpCircle size={20} />
-                                    <span>How does this work?</span>
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                    <ThemeToggle />
+                                    <button 
+                                        onClick={() => setIsHelpModalOpen(true)} 
+                                        className="flex items-center space-x-2 px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-muted transition-colors text-sm font-medium"
+                                    >
+                                        <HelpCircle size={16} />
+                                        <span>How it works</span>
+                                    </button>
+                                </div>
                             </div>
                         </header>
                         
-                        <div className="mb-6 flex space-x-2 border-b pb-2">
-                           <TabButton view="forecaster" label="Forecaster" icon={<TrendingUp size={16}/>} />
-                           <TabButton view="stats" label="Team Stats" icon={<BarChart2 size={16}/>} />
-                           <TabButton view="current" label="Current Sprint" icon={<Activity size={16}/>} />
+                        <div className="mb-8 p-1.5 inline-flex items-center space-x-1 bg-muted rounded-lg">
+                           <TabButton view="forecaster" label="Forecaster" icon={<TrendingUp size={16}/>} activeView={activeView} setActiveView={setActiveView} />
+                           <TabButton view="stats" label="Team Stats" icon={<BarChart2 size={16}/>} activeView={activeView} setActiveView={setActiveView} />
+                           <TabButton view="current" label="Current Sprint" icon={<Activity size={16}/>} activeView={activeView} setActiveView={setActiveView} />
                         </div>
 
                         {activeView === 'forecaster' && (
@@ -137,7 +109,7 @@ function App() {
                         )}
                         
                         {activeView === 'stats' && (
-                            <TeamStats sprints={sprints} />
+                            <TeamStats sprints={sprints} jiraDomain={jiraDomain} />
                         )}
 
                         {activeView === 'current' && (
@@ -145,8 +117,8 @@ function App() {
                         )}
                     </div>
                 </main>
-                <footer className="text-center py-6 text-sm text-gray-400">
-                    <a href="https://github.com/adriandiazgar" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 hover:text-gray-700">
+                <footer className="text-center py-6 text-sm text-muted-foreground border-t">
+                    <a href="https://github.com/adriandiazgar" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center space-x-2 hover:text-foreground">
                         <Github size={16} />
                         <span>Made with ❤️ by Adrián Díaz in Barcelona</span>
                     </a>
