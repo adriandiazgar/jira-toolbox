@@ -5,8 +5,9 @@ import { CapacityForecast } from './components/forecaster/CapacityForecast';
 import { HelpModal } from './components/ui/HelpModal';
 import { TeamStats } from './components/team_stats/TeamStats';
 import { CurrentSprintAnalysis } from './components/current_sprint/CurrentSprintAnalysis';
+import { EpicsAnalysis } from './components/epics/EpicsAnalysis'; // New Component
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { HelpCircle, BarChart2, TrendingUp, Github, Activity } from 'lucide-react';
+import { HelpCircle, BarChart2, TrendingUp, Github, Activity, FolderGit2 } from 'lucide-react';
 import { TabButton } from './components/ui/TabButton';
 import { ThemeToggle } from './components/ui/ThemeToggle';
 
@@ -71,7 +72,7 @@ function App() {
                                     <p className="text-lg text-muted-foreground mt-2">Locally-run tool for forecasting and analyzing sprint data.</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <ThemeToggle />
+                                   {/* <ThemeToggle /> */}
                                     <button 
                                         onClick={() => setIsHelpModalOpen(true)} 
                                         className="flex items-center space-x-2 px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-muted transition-colors text-sm font-medium"
@@ -87,6 +88,7 @@ function App() {
                            <TabButton view="forecaster" label="Forecaster" icon={<TrendingUp size={16}/>} activeView={activeView} setActiveView={setActiveView} />
                            <TabButton view="stats" label="Team Stats" icon={<BarChart2 size={16}/>} activeView={activeView} setActiveView={setActiveView} />
                            <TabButton view="current" label="Current Sprint" icon={<Activity size={16}/>} activeView={activeView} setActiveView={setActiveView} />
+                           <TabButton view="epics" label="Epics" icon={<FolderGit2 size={16}/>} activeView={activeView} setActiveView={setActiveView} />
                         </div>
 
                         {activeView === 'forecaster' && (
@@ -114,6 +116,10 @@ function App() {
 
                         {activeView === 'current' && (
                             <CurrentSprintAnalysis jiraDomain={jiraDomain} setJiraDomain={setJiraDomain} />
+                        )}
+
+                        {activeView === 'epics' && (
+                            <EpicsAnalysis sprints={sprints} jiraDomain={jiraDomain} />
                         )}
                     </div>
                 </main>

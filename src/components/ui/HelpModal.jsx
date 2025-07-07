@@ -59,6 +59,22 @@ const CurrentSprintHelp = () => (
     </>
 );
 
+
+const EpicsHelp = () => (
+    <>
+        <div>
+            <h3 className="font-bold text-lg text-foreground">Epics Analysis View</h3>
+            <p>This page provides a high-level overview of progress on your major initiatives (Epics) by aggregating data from all of your imported sprints.</p>
+            <ul className="list-disc list-inside mt-2 space-y-1">
+                <li><strong>Epic Breakdown:</strong> Each card represents one Epic and shows the total story points and tickets completed across all selected sprints.</li>
+                <li><strong>Detailed View:</strong> Click "View Tickets" on any epic card to see a list of all the individual stories, tasks, and bugs that contributed to it.</li>
+                <li><strong>Filters:</strong> You can filter the view by one or more sprints to see which epics your team worked on during specific periods. You can also filter by epic name to find a specific initiative.</li>
+            </ul>
+        </div>
+    </>
+);
+
+
 export function HelpModal({ isOpen, onClose, activeView }) {
     const renderHelpContent = () => {
         switch (activeView) {
@@ -68,6 +84,8 @@ export function HelpModal({ isOpen, onClose, activeView }) {
                 return <TeamStatsHelp />;
             case 'current':
                 return <CurrentSprintHelp />;
+            case 'epics':
+                return <EpicsHelp />;
             default:
                 return <p>Select a tab to see help information.</p>;
         }
